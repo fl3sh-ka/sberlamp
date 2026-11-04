@@ -101,7 +101,7 @@ class LampError(Exception):
 
 
 class AuthError(LampError):
-    """Токен отсутствует или отвергнут — нужен lamp setup."""
+    """Токен отсутствует или отвергнут - нужен lamp setup."""
 
 
 class NetworkError(LampError):
@@ -255,7 +255,7 @@ class SberLampAPI:
             except ApiError as error:
                 if attempt == 2 or error.status != 401:
                     raise
-                # токен протух между проверкой и запросом — обновляем и повторяем
+                # токен протух между проверкой и запросом - обновляем и повторяем
                 self._smarthome_token = None
                 self._access_token = None
                 await self._ensure_smarthome_token()
@@ -616,7 +616,7 @@ def load_anchors() -> list:
     try:
         return sorted(anchors, key=lambda a: to_minutes(a["time"]))
     except (KeyError, TypeError, ValueError):
-        print("в schedule.json нет поля time — беру стандартный график", file=sys.stderr)
+        print("в schedule.json нет поля time - беру стандартный график", file=sys.stderr)
         return DEFAULT_ANCHORS
 
 
@@ -645,7 +645,7 @@ def cmd_schedule() -> None:
     if SCHEDULE_PATH.exists():
         print(f"файл: {SCHEDULE_PATH}")
     else:
-        print(f"файл: {SCHEDULE_PATH} — нет, используется стандартный график")
+        print(f"файл: {SCHEDULE_PATH} - нет, используется стандартный график")
 
 
 async def apply_curve(api, device_id: str, dry_run: bool = False,
@@ -659,15 +659,15 @@ async def apply_curve(api, device_id: str, dry_run: bool = False,
     stamp = f"{minutes // 60:02d}:{minutes % 60:02d}"
 
     if not states.get("on_off") and not force:
-        return f"{stamp}: лампа выключена — не трогаю"
+        return f"{stamp}: лампа выключена - не трогаю"
     if mode in ("scene", "music", "colour", "color") and not force:
-        return (f"{stamp}: режим «{MODE_NAMES.get(mode, mode)}» — не перебиваю "
+        return (f"{stamp}: режим «{MODE_NAMES.get(mode, mode)}» - не перебиваю "
                 f"(нужно --force)")
 
     current_b = brightness_of(states) or 100
     current_t = temp_of(states) if temp_of(states) is not None else 50
     if abs(current_b - target_b) < 2 and abs(current_t - target_t) < 2 and mode == "white":
-        return f"{stamp}: без изменений — {current_b}% / {current_t}"
+        return f"{stamp}: без изменений - {current_b}% / {current_t}"
 
     if dry_run:
         return (f"{stamp}: стало бы {current_b}% / {current_t} → "
@@ -688,7 +688,7 @@ async def cmd_auto(api, device_id: str, dry_run: bool = False,
 
 async def cmd_watch(api, device_id: str, interval: int) -> None:
     """Долгоживущий цикл: держит сессию и правит свет по графику."""
-    print(f"слежу за графиком, шаг {interval} с (Ctrl+C — остановить)", flush=True)
+    print(f"слежу за графиком, шаг {interval} с (Ctrl+C - остановить)", flush=True)
     last = None
     while True:
         try:
@@ -813,7 +813,7 @@ async def cloud_home_id(api) -> str:
             return group["id"]
     if groups:
         return groups[0]["id"]
-    raise SystemExit("Не нашёл дом в аккаунте — сценарий создавать некуда")
+    raise SystemExit("Не нашёл дом в аккаунте - сценарий создавать некуда")
 
 
 async def cloud_create(api, home_id: str, name: str, steps: list) -> str:
@@ -847,7 +847,7 @@ async def cloud_set_active(api, scenario_id: str, active: bool) -> None:
 def print_cloud(stored: dict) -> None:
     items = stored.get("items") or []
     if not items:
-        print("Облачных сценариев нет (lamp cloud push — создать)")
+        print("Облачных сценариев нет (lamp cloud push - создать)")
         return
     state = "включены" if stored.get("active", True) else "выключены"
     print(f"Сценарии графика: {state}, точек {len(items)}, зона {stored.get('timezone')}")
@@ -871,7 +871,7 @@ async def cmd_cloud(api, cfg, action: str) -> None:
                     active += bool(node.get("is_active"))
                     faulty += bool(node.get("is_faulty"))
                 except LampError as error:
-                    print(f"  {item['time']}: не читается — {error}")
+                    print(f"  {item['time']}: не читается - {error}")
             print(f"в облаке: активны {active} из {len(items)}, с ошибкой {faulty}")
         return
 
@@ -895,7 +895,7 @@ async def cmd_cloud(api, cfg, action: str) -> None:
             except LampError as error:
                 cloud_save({"active": True, "timezone": zone, "items": created})
                 raise SystemExit(f"на точке {anchor['time']} облако отказало: {error}\n"
-                                 f"создано {len(created)} — убрать: lamp cloud delete")
+                                 f"создано {len(created)} - убрать: lamp cloud delete")
             created.append({"id": scenario_id, "time": anchor["time"],
                             "brightness": anchor["brightness"], "temp": anchor["temp"]})
             print(f"  {anchor['time']}  {anchor['brightness']:3d}%  t={anchor['temp']}"
@@ -906,7 +906,7 @@ async def cmd_cloud(api, cfg, action: str) -> None:
 
     if action in ("on", "off"):
         if not items:
-            raise SystemExit("Сценариев ещё нет — сначала lamp cloud push")
+            raise SystemExit("Сценариев ещё нет - сначала lamp cloud push")
         wanted = action == "on"
         failed = 0
         for item in items:
@@ -923,12 +923,12 @@ async def cmd_cloud(api, cfg, action: str) -> None:
 
     if action == "delete":
         if not items:
-            raise SystemExit("Сценариев нет — нечего удалять")
+            raise SystemExit("Сценариев нет - нечего удалять")
         for item in items:
             try:
                 await cloud_delete(api, item["id"])
             except LampError as error:
-                print(f"  {item['time']}: не удалился — {error}", file=sys.stderr)
+                print(f"  {item['time']}: не удалился - {error}", file=sys.stderr)
         cloud_save({})
         print("сценарии удалены, облако чистое")
         return
@@ -1070,7 +1070,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("scene", help="сцена: " + ", ".join(SCENES))
     p.add_argument("name", choices=SCENES)
 
-    p = sub.add_parser("fade", help="плавно: fade 30 10 — до 30%% за 10 минут")
+    p = sub.add_parser("fade", help="плавно: fade 30 10 - до 30%% за 10 минут")
     p.add_argument("target", type=int)
     p.add_argument("minutes", nargs="?", type=float, default=10)
 
@@ -1097,14 +1097,14 @@ def main() -> None:
     try:
         asyncio.run(run(args))
     except AuthError:
-        sys.exit("Токен не найден или истёк — выполни: lamp setup")
+        sys.exit("Токен не найден или истёк - выполни: lamp setup")
     except NetworkError as error:
         detail = f": {error.__cause__}" if error.__cause__ else ""
         sys.exit(f"Сеть недоступна, облако Сбера не отвечает{detail}\n"
                  "Проверь интернет и VPN (домены Сбера должны идти напрямую).")
     except ApiError as error:
         if "invalid_grant" in str(error):
-            sys.exit("Токен недействителен — выполни: lamp setup")
+            sys.exit("Токен недействителен - выполни: lamp setup")
         sys.exit(f"Облако ответило ошибкой: {error}")
     except (LampError, OSError) as error:
         sys.exit(f"Ошибка: {error}")
