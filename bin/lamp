@@ -1,0 +1,4 @@
+#!/bin/sh
+# Обёртка: запускает lamp.py из виртуального окружения проекта.
+# Поправь пути, если поставил проект не в ~/Projects/sberlamp.
+exec "$HOME/Projects/sberlamp/.venv/bin/python" "$HOME/Projects/sberlamp/lamp.py" "$@"

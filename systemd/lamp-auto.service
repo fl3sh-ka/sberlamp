@@ -1,0 +1,12 @@
+[Unit]
+Description=Лампа Sber: яркость и температура по времени суток
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/lamp watch --interval 180
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target
