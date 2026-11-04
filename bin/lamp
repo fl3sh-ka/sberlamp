@@ -1,4 +1,13 @@
 #!/bin/sh
-# Обёртка: запускает lamp.py из виртуального окружения проекта.
-# Поправь пути, если поставил проект не в ~/Projects/sberlamp.
-exec "$HOME/Projects/sberlamp/.venv/bin/python" "$HOME/Projects/sberlamp/lamp.py" "$@"
+# Обёртка: запускает lamp.py из виртуального окружения рядом со скриптом.
+# Каталог определяется по расположению самого скрипта, в том числе через симлинк.
+SELF=$0
+while [ -L "$SELF" ]; do
+    TARGET=$(readlink -- "$SELF") || break
+    case $TARGET in
+        /*) SELF=$TARGET ;;
+        *) SELF=$(dirname -- "$SELF")/$TARGET ;;
+    esac
+done
+HERE=$(CDPATH= cd -- "$(dirname -- "$SELF")/.." && pwd) || exit 1
+exec "$HERE/.venv/bin/python" "$HERE/lamp.py" "$@"

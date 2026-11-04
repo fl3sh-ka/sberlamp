@@ -19,11 +19,14 @@
 git clone https://github.com/fl3sh-ka/sberlamp.git ~/Projects/sberlamp
 cd ~/Projects/sberlamp
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-mkdir -p ~/.local/bin && cp bin/lamp ~/.local/bin/ && chmod +x ~/.local/bin/lamp
+mkdir -p ~/.local/bin && ln -sf "$PWD/bin/lamp" ~/.local/bin/lamp
 ```
 
-`~/.local/bin` должен быть в `PATH`. Если проект лежит в другом каталоге,
-поправьте пути в `bin/lamp`.
+`~/.local/bin` должен быть в `PATH`. Ссылка указывает на скрипт в проекте,
+поэтому путь установки может быть любым. Если проект перенесён, ссылку нужно
+создать заново.
+
+В Fedora из системного нужен только `git`: `sudo dnf install git`.
 
 ## Первый запуск
 
@@ -33,7 +36,17 @@ lamp setup
 
 Вводится номер телефона, затем код из SMS, затем выбирается лампа из списка.
 Токен сохраняется в `~/.config/sberlamp/refresh_token` с правами 600, id
-устройства в `~/.config/sberlamp/config.json`.
+устройства в `~/.config/sberlamp/config.json`. Привязка личная: каждый
+пользователь выполняет `lamp setup` под своим аккаунтом, файлы в репозиторий
+не попадают.
+
+## Обновление
+
+```bash
+cd ~/Projects/sberlamp && git pull && .venv/bin/pip install -r requirements.txt
+```
+
+Симлинк в `~/.local/bin` остаётся рабочим.
 
 ## Команды
 
@@ -64,6 +77,14 @@ lamp setup
 ```
 
 Между точками значения считаются линейно. Чем больше точек, тем плавнее.
+
+Свой файл создаётся из примера:
+
+```bash
+mkdir -p ~/.config/sberlamp && cp schedule.example.json ~/.config/sberlamp/schedule.json
+```
+
+Без файла используется встроенный график с теми же точками.
 
 Есть два способа применения графика. Одновременно включать не нужно.
 
