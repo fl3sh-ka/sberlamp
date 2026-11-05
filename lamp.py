@@ -634,6 +634,17 @@ def curve_at(minutes: int, anchors: list):
     return points[0][1], points[0][2]
 
 
+def densify(anchors: list, step: int) -> list:
+    """Раскладывает график на точки каждые step минут (для облака)."""
+    points = []
+    for minute in range(0, 1440, step):
+        brightness, temp = curve_at(minute, anchors)
+        points.append({"time": f"{minute // 60:02d}:{minute % 60:02d}",
+                       "brightness": max(5, min(100, brightness)),
+                       "temp": max(0, min(100, temp))})
+    return points
+
+
 def cmd_schedule() -> None:
     anchors = load_anchors()
     minutes = now_minutes()
@@ -855,7 +866,7 @@ def print_cloud(stored: dict) -> None:
         print(f"  {item['time']}  {item['brightness']:3d}%  t={item['temp']}  {item['id']}")
 
 
-async def cmd_cloud(api, cfg, action: str) -> None:
+async def cmd_cloud(api, cfg, action: str, step: int = 0) -> None:
     device_id = cfg["device_id"]
     stored = cloud_load()
     items = stored.get("items") or []
@@ -877,6 +888,8 @@ async def cmd_cloud(api, cfg, action: str) -> None:
 
     if action == "push":
         anchors = load_anchors()
+        if step > 0:
+            anchors = densify(anchors, step)
         zone = local_timezone()
         home_id = await cloud_home_id(api)
         for item in items:
@@ -1007,7 +1020,7 @@ async def run(args) -> None:
         elif args.cmd == "watch":
             await cmd_watch(api, device_id, args.interval)
         elif args.cmd == "cloud":
-            await cmd_cloud(api, cfg, args.action)
+            await cmd_cloud(api, cfg, args.action, args.step)
         else:
             raise SystemExit(f"Неизвестная команда: {args.cmd}")
 
@@ -1088,6 +1101,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("cloud", help="облачный сценарий Сбера (работает без ноутбука)")
     p.add_argument("action", choices=["push", "list", "on", "off", "delete"])
+    p.add_argument("--step", type=int, default=0, metavar="МИН",
+                   help="для push: разложить график на точки каждые МИН минут")
 
     return parser
 
